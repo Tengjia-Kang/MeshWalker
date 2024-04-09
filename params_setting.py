@@ -65,14 +65,16 @@ def set_up_default_params(network_task, run_name, cont_run_number=0):
 
   params.initializers = 'orthogonal'
   params.adjust_vertical_model = False
-  params.net_start_from_prev_net = None
+  params.net_start_from_prev_net = "runs/shrec11_28.3witer/learned_model2keep__00086310.keras"
+  # params.net_start_from_prev_net = None
+
 
   params.net_gru_dropout = 0
   params.uniform_starting_point = False
 
   params.full_accuracy_test = None
 
-  params.iters_to_train = 60e3
+  params.iters_to_train = 60e4
 
   return params
 
@@ -93,12 +95,40 @@ def modelnet_params():
   params.seq_len = 800
   params.min_seq_len = int(params.seq_len / 2)
 
-  params.full_accuracy_test = {'dataset_expansion': params.datasets2use['test'][0],
-                               'labels': dataset_prepare.model_net_labels,
-                               'min_max_faces2use': params.test_min_max_faces2use,
-                               'n_walks_per_model': 16 * 4,
-                               }
+  # params.full_accuracy_test = {'dataset_expansion': params.datasets2use['test'][0],
+  #                              'labels': dataset_prepare.model_net_labels,
+  #                              'min_max_faces2use': params.test_min_max_faces2use,
+  #                              'n_walks_per_model': 16 * 4,
+  #                              }
+  params.full_accuracy_test = None
 
+  # Parameters to recheck:
+  params.iters_to_train = 500e3
+  params.net_input = ['xyz']
+
+  return params
+
+def manifold_params():
+  params = set_up_default_params('classification', 'manifold', 0)
+  params.n_classes = 40
+
+  p = 'modelnet40'
+  params.train_min_max_faces2use = [0000, 500]
+  params.test_min_max_faces2use = [0000, 500]
+
+  # ds_path = 'datasets_processed/modelnet40'
+  params.datasets2use['train'] = ['/home/kang/SSD/datasets/MeshWalker/datasets_processed/Manifold40' + '/train/train*.npz']
+  params.datasets2use['test'] = ['/home/kang/SSD/datasets/MeshWalker/datasets_processed/Manifold40' + '/test/test*.npz']
+
+  params.seq_len = 800
+  params.min_seq_len = int(params.seq_len / 2)
+
+  # params.full_accuracy_test = {'dataset_expansion': params.datasets2use['test'][0],
+  #                              'labels': dataset_prepare.model_net_labels,
+  #                              'min_max_faces2use': params.test_min_max_faces2use,
+  #                              'n_walks_per_model': 16 * 4,
+  #                              }
+  params.full_accuracy_test = None
 
   # Parameters to recheck:
   params.iters_to_train = 500e3
@@ -133,10 +163,32 @@ def shrec11_params(split_part):
   params.seq_len = 100
   params.min_seq_len = int(params.seq_len / 2)
 
-  params.datasets2use['train'] = ['datasets_processed/shrec11/' + split_part + '/train/*.npz']
-  params.datasets2use['test']  = ['datasets_processed/shrec11/' + split_part + '/test/*.npz']
+
+  # params.datasets2use['train'] = [
+  #   '/home/kang/SSD/datasets/MeshWalker/datasets_processed/shrec16' + '/train/*.npz']
+
+  # params.datasets2use['test'] = [
+  #   'datasets/datasets_processed/shrec16/test/*.npz']
+  #
+  # params.datasets2use['test'] = [
+  #   '/home/kang/SSD/Projects/MeshWalker/datasets/datasets_processed/test/*.npz']
+
+  params.datasets2use['test'] = [
+    '/home/kang/SSD/Projects/MeshWalker/datasets/datasets_processed/1_18_momonum+noisy/*.npz']
+
+
+  # params.datasets2use['test'] = [
+  #   '/home/kang/SSD/Projects/Random-Walks-for-Adversarial-Meshes/attacks/Simp=4000,max_iter=6000,N_of_walk_8,walk_len=128,attack_weight=0.01,normlization=none,resized=false/npzs/objs/attacked_Meshwalker_prepared/*.npz']
+  # params.datasets2use['test'] = [
+  #   '/home/kang/SSD/Projects/Random-Walks-for-Adversarial-Meshes/attacks/Simp=4000,max_iter=6000,N_of_walk_8,walk_len=128,attack_weight=0.01,normlization=sign,resized=false/attacked_npzs/attacked_objs_prepared/*.npz']
+  # params.datasets2use['test'] = [
+  #   '/home/kang/SSD/datasets/MeshWalker/datasets_prepared/shrec16/test/*4000.npz']
+
+  # params.datasets2use['test'] = [
+  #   'datasets/datasets_processed/shrec_16_attacked/test*.npz']
 
   params.train_data_augmentation = {'rotation': 360}
+
 
   params.full_accuracy_test = {'dataset_expansion': params.datasets2use['test'][0],
                                'labels': dataset_prepare.shrec11_labels}

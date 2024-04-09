@@ -106,7 +106,7 @@ def check_mem_and_exit_if_full():
 next_iter_to_keep = 0 # Should be set by -train_val- function, each time job starts
 def save_model_if_needed(iterations, dnn_model, params):
   global next_iter_to_keep
-  iter_th = 20000
+  iter_th = 2000
   keep = iterations.numpy() >= next_iter_to_keep
   dnn_model.save_weights(params.logdir, iterations.numpy(), keep=keep)
   if keep:
@@ -114,15 +114,15 @@ def save_model_if_needed(iterations, dnn_model, params):
       next_iter_to_keep = iterations * 2
     else:
       next_iter_to_keep = int(iterations / iter_th) * iter_th + iter_th
-    if params.full_accuracy_test is not None:
-      if params.network_task == 'semantic_segmentation':
-        accuracy, _ = evaluate_segmentation.calc_accuracy_test(params=params, dnn_model=dnn_model, **params.full_accuracy_test)
-      elif params.network_task == 'classification':
-        accuracy, _ = evaluate_classification.calc_accuracy_test(params=params, dnn_model=dnn_model, **params.full_accuracy_test)
-      with open(params.logdir + '/log.txt', 'at') as f:
-        f.write('Accuracy: ' + str(np.round(np.array(accuracy) * 100, 2)) + '%, Iter: ' + str(iterations.numpy()) + '\n')
-      tf.summary.scalar('full_accuracy_test/overall', accuracy[0], step=iterations)
-      tf.summary.scalar('full_accuracy_test/mean', accuracy[1], step=iterations)
+    # if params.full_accuracy_test is not None:
+    #   if params.network_task == 'semantic_segmentation':
+    #     accuracy, _ = evaluate_segmentation.calc_accuracy_test(params=params, dnn_model=dnn_model, **params.full_accuracy_test)
+    #   elif params.network_task == 'classification':
+    #     accuracy, _ = evaluate_classification.calc_accuracy_test(params=params, dnn_model=dnn_model, **params.full_accuracy_test)
+    #   with open(params.logdir + '/log.txt', 'at') as f:
+    #     f.write('Accuracy: ' + str(np.round(np.array(accuracy) * 100, 2)) + '%, Iter: ' + str(iterations.numpy()) + '\n')
+    #   tf.summary.scalar('full_accuracy_test/overall', accuracy[0], step=iterations)
+    #   tf.summary.scalar('full_accuracy_test/mean', accuracy[1], step=iterations)
 
 
 def get_dataset_type_from_name(tf_names):

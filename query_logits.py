@@ -1,3 +1,5 @@
+# query logits of train datasets
+
 import sys, copy
 from easydict import EasyDict
 import json
@@ -10,9 +12,8 @@ import rnn_model
 import utils
 import dataset
 
-
 def calc_accuracy_test(dataset_expansion=False, logdir=None, labels=None, iter2use='last', classes_indices_to_use=None,
-                       dnn_model=None, params=None, min_max_faces2use=[0, np.inf], model_fn=None, n_walks_per_model=8, data_augmentation={}):
+                       dnn_model=None, params=None, min_max_faces2use=[0, 4000], model_fn=None, n_walks_per_model=16, data_augmentation={}):
   # Prepare parameters for the evaluation
   if params is None:
     with open(logdir + '/params.txt') as fp:
@@ -58,8 +59,6 @@ def calc_accuracy_test(dataset_expansion=False, logdir=None, labels=None, iter2u
     predictions = dnn_model(ftr2use, classify=True, training=False).numpy()
 
     mean_pred = np.mean(predictions, axis=0)
-    # print(mean_pred)
-
     max_hit = np.argmax(mean_pred)
 
     if model_name not in pred_per_model_name.keys():

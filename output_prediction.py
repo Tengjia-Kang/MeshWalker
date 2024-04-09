@@ -1,3 +1,4 @@
+import evaluate_classification
 import sys, copy
 from easydict import EasyDict
 import json
@@ -11,8 +12,40 @@ import utils
 import dataset
 
 
+
+def output_prediction():
+
+   return
+
+# define network and its params
+def define_network_and_its_params(config=None):
+  """
+  Defining the parameters of the network, called params, and loads the trained model, called dnn_model
+  """
+  # 加载params.txt中的参数
+  with open(config['trained_model'] + '/params.txt') as fp:
+    params = EasyDict(json.load(fp))
+  model_fn = tf.train.latest_checkpoint(config['trained_model'])
+  # Define network parameters
+  params.batch_size = 1
+  params.seq_len = config['walk_len']
+  params.n_walks_per_model = config['num_walks_per_iter']
+  params.set_seq_len_by_n_faces = False
+  params.data_augmentaion_vertices_functions = []
+  params.label_per_step = False
+  params.n_target_vrt_to_norm_walk = 0
+  params.net_input += ['vertex_indices']
+  dataset.setup_features_params(params, params)
+  dataset.mesh_data_to_walk_features.SET_SEED_WALK = False
+  dnn_model = rnn_model.RnnWalkNet(params, params.n_classes, 3, model_fn,
+                                           model_must_be_load=True, dump_model_visualization=False)
+  return params, dnn_model
+
+
+
+
 def calc_accuracy_test(dataset_expansion=False, logdir=None, labels=None, iter2use='last', classes_indices_to_use=None,
-                       dnn_model=None, params=None, min_max_faces2use=[0, np.inf], model_fn=None, n_walks_per_model=8, data_augmentation={}):
+                       dnn_model=None, params=None, min_max_faces2use=[0, 4000], model_fn=None, n_walks_per_model=16, data_augmentation={}):
   # Prepare parameters for the evaluation
   if params is None:
     with open(logdir + '/params.txt') as fp:
@@ -58,8 +91,8 @@ def calc_accuracy_test(dataset_expansion=False, logdir=None, labels=None, iter2u
     predictions = dnn_model(ftr2use, classify=True, training=False).numpy()
 
     mean_pred = np.mean(predictions, axis=0)
-    # print(mean_pred)
-
+    print(predictions)
+    #print(mean_pred)
     max_hit = np.argmax(mean_pred)
 
     if model_name not in pred_per_model_name.keys():
@@ -96,21 +129,21 @@ def calc_accuracy_test(dataset_expansion=False, logdir=None, labels=None, iter2u
 
   return [mean_accuracy_all_faces, mean_acc_per_class], dnn_model
 
-
 if __name__ == '__main__':
-  from train_val import get_params
-  utils.config_gpu(True)
-  np.random.seed(0)
-  tf.random.set_seed(0)
+    from train_val import get_params
+    utils.config_gpu(True)
+    np.random.seed(0)
+    tf.random.set_seed(0)
 
-  if len(sys.argv) != 4:
-    print('Use: python evaluate_classification.py <job> <part> <trained model directory>')
-    print('For example: python evaluate_classification.py shrec11 10-10_A pretrained/0001-09.11.2020..19.57__shrec11_10-10_A')
-  else:
-    logdir = sys.argv[3]
-    job = sys.argv[1]
-    job_part = sys.argv[2]
-    params = get_params(job, job_part)
-    accs, _ = calc_accuracy_test(logdir=logdir, **params.full_accuracy_test)
-    print('Mean accuracy:', accs[0])
-    print('Mean per class accuracy:', accs[1])
+    if len(sys.argv) != 4:
+        print('Use: python evaluate_classification.py <job> <part> <trained model directory>')
+        print(
+                'For example: python evaluate_classification.py shrec11 10-10_A pretrained/0001-09.11.2020..19.57__shrec11_10-10_A')
+    else:
+        logdir = sys.argv[3]
+        job = sys.argv[1]
+        job_part = sys.argv[2]
+        params = get_params(job, job_part)
+        accs, _ = calc_accuracy_test(logdir=logdir, **params.full_accuracy_test)
+        print('Mean accuracy:', accs[0])
+        print('Mean per class accuracy:', accs[1])

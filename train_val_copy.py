@@ -93,7 +93,7 @@ def train_val(params):
   else:
     seg_loss = tf.keras.losses.SparseCategoricalCrossentropy()
 
-  #@tf.function
+  @tf.function
   def train_step(model_ftrs_, labels_, one_label_per_model):
     sp = model_ftrs_.shape
     model_ftrs = tf.reshape(model_ftrs_, (-1, sp[-2], sp[-1]))
@@ -233,7 +233,8 @@ def get_params(job, job_part):
   job = job.lower()
   if job == 'modelnet40' or job == 'modelnet':
     params = params_setting.modelnet_params()
-
+  if job == 'manifold40' or job == 'manifold':
+    params = params_setting.manifold_params()
   if job == 'shrec11':
     params = params_setting.shrec11_params(job_part)
 

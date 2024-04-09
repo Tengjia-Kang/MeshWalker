@@ -160,6 +160,8 @@ def get_labels(dataset_name, mesh, file, fn2labels_map=None):
       model_label = model_net_shape2label[model_name]
     elif dataset_name.lower().startswith('cubes'):
       model_label = cubes_shape2label[model_name]
+    elif dataset_name.lower().startswith('manifold'):
+      model_label = model_net_shape2label[model_name]
     elif dataset_name.lower().startswith('shrec11'):
       model_name = file.split('/')[-3]
       if fn2labels_map is None:
@@ -260,6 +262,41 @@ def prepare_modelnet40():
                         fn_prefix=part + '_', verbose=False)
 
 
+def prepare_manifold40(labels2use=model_net_labels,
+                    path_in='/home/kang/SSD/datasets/MeshWalker/datasets_raw/Manifold40/',
+                    p_out='/home/kang/SSD/datasets/MeshWalker/datasets_processed/Manifold40'):
+  dataset_name = 'manifold40'
+  n_target_faces = [500]
+  if not os.path.isdir(p_out):
+    os.mkdir(p_out)
+
+  for i, name in enumerate(labels2use):
+    print('-->>>', name)
+    for part in ['test', 'train']:
+      pin = path_in + name + '/' + part + '/'
+      prepare_directory(dataset_name, pathname_expansion=pin + '*.obj',
+                        p_out=p_out, add_labels=dataset_name, fn_prefix=part + '_', n_target_faces=n_target_faces,
+                        classification=True)
+
+
+
+def prepare_shrec11(labels2use=shrec11_labels,
+                    path_in='/home/kang/SSD/Projects/MeshWalker/datasets/datasets_raw/1_18_momonum+noisy/',
+                    p_out='/home/kang/SSD/Projects/MeshWalker/datasets/datasets_processed/1_18_momonum+noisy'):
+  dataset_name = 'shrec11'
+  n_target_faces = [1000]
+  if not os.path.isdir(p_out):
+    os.mkdir(p_out)
+
+  for i, name in enumerate(labels2use):
+    print('-->>>', name)
+    for part in ['test', 'train']:
+      pin = path_in + name + '/' + part + '/'
+      prepare_directory(dataset_name, pathname_expansion=pin + '*.obj',
+                        p_out=p_out, add_labels=dataset_name, fn_prefix=part + '_', n_target_faces=n_target_faces,
+                        classification=True)
+
+
 def prepare_cubes(labels2use=cubes_labels,
                   path_in='datasets_raw/from_meshcnn/cubes/',
                   p_out='datasets_processed/cubes'):
@@ -292,7 +329,7 @@ def prepare_seg_from_meshcnn(dataset, subfolder=None):
 
   for part in ['test', 'train']:
     pin = path_in + '/' + part + '/'
-    prepare_directory(dataset_name, pathname_expansion=pin + '*.obj',
+    prepare_directory(dataset_name, pathname_expansion=pin + '*.off',
                       p_out=p_out, add_labels=dataset_name, fn_prefix=part + '_', n_target_faces=[np.inf],
                       classification=False)
 
@@ -304,9 +341,11 @@ def prepare_one_dataset(dataset_name):
   dataset_name = dataset_name.lower()
   if dataset_name == 'modelnet40' or dataset_name == 'modelnet':
     prepare_modelnet40()
+  if dataset_name == 'manifold40' or dataset_name == 'manifold':
+    prepare_manifold40()
 
   if dataset_name == 'shrec11':
-    print('To do later')
+    prepare_shrec11()
 
   if dataset_name == 'cubes':
     prepare_cubes()
@@ -322,7 +361,8 @@ def prepare_one_dataset(dataset_name):
 
 
 if __name__ == '__main__':
-  utils.config_gpu(False)
+  # utils.config_gpu(False)
+  utils.config_gpu(True)
   np.random.seed(1)
 
   if len(sys.argv) != 2:
@@ -332,7 +372,7 @@ if __name__ == '__main__':
   else:
     dataset_name = sys.argv[1]
     if dataset_name == 'all':
-      for dataset_name in ['cubes', 'human_seg', 'coseg', 'modelnet40']:
+      for dataset_name in ['cubes', 'human_seg', 'coseg', 'modelnet40', 'manifold40']:
         prepare_one_dataset(dataset_name)
     else:
       prepare_one_dataset(dataset_name)
